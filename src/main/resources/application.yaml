@@ -1,0 +1,25 @@
+spring:
+  profiles:
+    active: dev
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+
+server:
+  port: 8082
+
+application:
+  jwt:
+    secret-key: 3a8f2c1d9e7b4f6a0c5d8e2f1a3b7c9d4e6f8a0b2c4d6e8f0a1b3c5d7e9f1a3b
+    access-token-expiration: 900000
+    refresh-token-expiration: 604800000
