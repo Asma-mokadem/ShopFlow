@@ -32,13 +32,16 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Routes publiques
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
-                        // Routes protégées par rôle
+                        .requestMatchers("/api/categories/**").permitAll()
+                        // Avis publics
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.GET,
+                                "/api/products/*/reviews"
+                        ).permitAll()
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/api/seller/**").hasAuthority("ROLE_SELLER")
-                        // Tout le reste nécessite authentification
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
