@@ -22,13 +22,13 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        // ===== ROLES =====
+        // ROLES
         createRoleIfNotExists(Role.RoleName.ROLE_ADMIN);
         createRoleIfNotExists(Role.RoleName.ROLE_SELLER);
         createRoleIfNotExists(Role.RoleName.ROLE_CUSTOMER);
-        System.out.println("✅ Roles initialized successfully");
+        System.out.println(" Roles initialized successfully");
 
-        // ===== ADMIN =====
+        // ADMIN
         if (!userRepository.existsByEmail("admin@shopflow.com")) {
             Role adminRole = roleRepository
                     .findByName(Role.RoleName.ROLE_ADMIN)
