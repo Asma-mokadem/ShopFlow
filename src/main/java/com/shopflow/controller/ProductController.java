@@ -4,6 +4,8 @@ import com.shopflow.dto.request.CategoryRequest;
 import com.shopflow.dto.request.ProductRequest;
 import com.shopflow.dto.response.CategoryResponse;
 import com.shopflow.dto.response.ProductResponse;
+import com.shopflow.entity.ProductVariant;
+import com.shopflow.repository.ProductVariantRepository;
 import com.shopflow.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -22,8 +26,9 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductVariantRepository productVariantRepository;
 
-    // ===== PRODUITS PUBLIC =====
+    //PRODUITS PUBLIC
 
     @GetMapping("/products")
     public ResponseEntity<Page<ProductResponse>> getAllProducts(
@@ -57,7 +62,27 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductsByCategory(categoryId, pageable));
     }
 
-    // ===== PRODUITS SELLER =====
+    /**
+     * Endpoint utilisé par le frontend pour récupérer les variants d'un produit
+     * avant d'ajouter au panier (CartItemRequest requiert un productVariantId)
+     */
+    @GetMapping("/products/{id}/variants")
+    public ResponseEntity<List<Map<String, Object>>> getProductVariants(
+            @PathVariable Long id) {
+        List<Map<String, Object>> variants = productVariantRepository
+                .findByProductId(id)
+                .stream()
+                .map(v -> Map.of(
+                        "id", (Object) v.getId(),
+                        "size", v.getSize() != null ? v.getSize() : "",
+                        "color", v.getColor() != null ? v.getColor() : "",
+                        "stock", v.getStock()
+                ))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(variants);
+    }
+
+    // PRODUITS SELLER
 
     @PostMapping("/seller/products")
     @PreAuthorize("hasAuthority('ROLE_SELLER') or hasAuthority('ROLE_ADMIN')")
@@ -87,7 +112,7 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    // ===== CATEGORIES =====
+    //  CATEGORIES
 
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryResponse>> getAllCategories() {

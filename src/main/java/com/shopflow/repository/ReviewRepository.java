@@ -15,6 +15,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Page<Review> findByProductId(Long productId, Pageable pageable);
 
+    // méthode pour getMyReviews
+    Page<Review> findByUserEmail(String email, Pageable pageable);
+
     boolean existsByUserEmailAndProductId(String email, Long productId);
 
     Optional<Review> findByUserEmailAndProductId(String email, Long productId);
