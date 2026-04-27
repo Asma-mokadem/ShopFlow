@@ -31,20 +31,38 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // Si pas de token → on laisse passer
+        // Pas de token → on laisse passer
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
         final String jwt = authHeader.substring(7);
-        final String userEmail = jwtService.extractUsername(jwt);
+
+        // FIX: entourer l'extraction du token dans un try/catch
+        // pour gérer les tokens expirés ou malformés sans planter le filtre
+        String userEmail = null;
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+        } catch (Exception e) {
+            // Token invalide ou expiré → on laisse passer sans authentifier
+            // Spring Security traitera la requête comme anonyme
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // Si email extrait et pas encore authentifié
         if (userEmail != null &&
                 SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+            UserDetails userDetails;
+            try {
+                userDetails = userDetailsService.loadUserByUsername(userEmail);
+            } catch (Exception e) {
+                // Utilisateur introuvable → on laisse passer anonyme
+                filterChain.doFilter(request, response);
+                return;
+            }
 
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
